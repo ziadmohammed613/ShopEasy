@@ -7,7 +7,17 @@ namespace ShopEasy.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<CustomerProfile> builder)
         {
-            
+            builder.ToTable(name: "CustomerProfiles", schema: "shop");
+
+            builder.Property(cp => cp.Address).HasMaxLength(300);
+            builder.Property(cp => cp.City).HasMaxLength(100);
+            builder.Property(cp => cp.PostalCode).HasMaxLength(20);
+            builder.Property(cp => cp.NationalId).HasMaxLength(30).HasColumnType("nvarchar(14)");
+
+            builder.HasOne<Customer>()
+                    .WithOne()
+                    .HasForeignKey<CustomerProfile>(cp => cp.CustomerId)
+                    .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
