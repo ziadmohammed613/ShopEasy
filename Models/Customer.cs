@@ -1,0 +1,15 @@
+namespace ShopEasy.Models
+{
+    public class Customer
+    {
+        public int CustomerId { get; set; }
+        public string FullName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string? PhoneNumber { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+ 
+        public CustomerProfile? CustomerProfile { get; set; }
+        public ICollection<Order> Orders { get; set; } = new List<Order>();
+        public ICollection<Review> Reviews { get; set; } = new List<Review>();
+    }
+}
