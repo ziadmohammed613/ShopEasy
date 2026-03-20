@@ -14,7 +14,7 @@ namespace ShopEasy.Data
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            
+            modelBuilder.HasSequence<int>("DiscountSeq", schema: "shop").StartsAt(1000).IncrementsBy(1);
         }
         public DbSet<Customer> Customers { set; get; }
         public DbSet<CustomerProfile> CustomerProfiles { set; get; }
