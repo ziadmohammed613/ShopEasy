@@ -14,8 +14,8 @@ namespace ShopEasy.Data.Configurations
             builder.Property(cp => cp.PostalCode).HasMaxLength(20);
             builder.Property(cp => cp.NationalId).HasMaxLength(30).HasColumnType("nvarchar(14)");
 
-            builder.HasOne<Customer>()
-                    .WithOne()
+            builder.HasOne(cp => cp.Customer)
+                    .WithOne(c => c.CustomerProfile)
                     .HasForeignKey<CustomerProfile>(cp => cp.CustomerId)
                     .OnDelete(DeleteBehavior.Cascade);
         }

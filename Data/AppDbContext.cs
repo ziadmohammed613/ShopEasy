@@ -9,8 +9,8 @@ namespace ShopEasy.Data
     {
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            string appsettings = File.ReadAllText("./appsettings.json");
-            string connectionString = JsonSerializer.Deserialize<Dictionary<string,string>>(appsettings)["ConnectionString"];
+            string appsettings = File.ReadAllText("./Data/appsettings.json");
+            string connectionString = JsonSerializer.Deserialize<Dictionary<string,string>>(appsettings)!["ConnectionString"];
             optionsBuilder.UseSqlServer(connectionString);
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
