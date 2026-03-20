@@ -99,5 +99,33 @@ namespace ShopEasy
                 System.Console.WriteLine(product);
             }
         }
+        public static void SearchProduct(this AppDbContext context)
+        {
+            System.Console.Write("Search by 1.Category 2.Name :");
+            int search = int.Parse(Console.ReadLine()!);
+            if(search == 1)
+            { // category
+                System.Console.Write("Category Name: ");
+                var products = context.Products.Include(p => p.Category)
+                                        .Where(p => p.IsActive)
+                                        .Where(p => p.Category.Name.Contains(Console.ReadLine()!))
+                                        .AsNoTracking();
+            }
+            else if(search == 2)
+            { // name
+                Console.Write("Product Name: ");
+                var products = context.Products.Where(p => p.IsActive)
+                                        .Where(p => p.Name.Contains(Console.ReadLine()!))
+                                        .AsNoTracking();
+                foreach(var product in products)
+                {
+                    System.Console.WriteLine(product);
+                }
+            }
+            else
+            {
+                System.Console.WriteLine("Invalid Value");
+            }
+        }
     }
 }
