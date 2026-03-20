@@ -8,8 +8,40 @@ namespace ShopEasy
     {
         public static void Main()
         {
-            // seeding
             var context = new AppDbContext();
+        }
+        public static void Register(this AppDbContext context)
+        {
+            try
+            {
+                System.Console.WriteLine("Customer:");
+                var customer = new Customer();
+                System.Console.Write("FullName: ");
+                customer.FullName = Console.ReadLine()!;
+                System.Console.Write("Email: ");
+                customer.Email = Console.ReadLine()!;
+                System.Console.Write("PhoneNumber: ");
+                customer.PhoneNumber = Console.ReadLine();
+
+                System.Console.WriteLine("CustomerProfile:");
+                var customerProfile = new CustomerProfile();
+                customerProfile.Customer = customer;
+                System.Console.Write("Address:");
+                customerProfile.Address = Console.ReadLine();
+                System.Console.Write("City:");
+                customerProfile.City = Console.ReadLine();
+                System.Console.Write("PostalCode:");
+                customerProfile.PostalCode = Console.ReadLine();
+                System.Console.Write("NationalId:");
+                customerProfile.NationalId = Console.ReadLine();
+
+                context.Customers.Add(customer);
+                context.CustomerProfiles.Add(customerProfile);
+            }
+            catch (Exception e)
+            {
+                System.Console.WriteLine($"Error! {e.Message}");
+            }
         }
     }
 }
