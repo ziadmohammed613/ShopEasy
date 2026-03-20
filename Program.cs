@@ -127,5 +127,39 @@ namespace ShopEasy
                 System.Console.WriteLine("Invalid Value");
             }
         }
+        public static void ViewProductDetails(this AppDbContext context)
+        {
+            System.Console.Write("Product Id: ");
+            int productId = int.Parse(Console.ReadLine()!);
+            var productDetails = context.Products.Include(p => p.ProductTags)
+                                                    .ThenInclude(pt => pt.Tag)
+                                                    .Include(p => p.Reviews)
+                                                    .Select(p => new
+                                                    {
+                                                        p.Name,
+                                                        p.Price,
+                                                        Tags = p.ProductTags.Select(pt => pt.Tag.Name).ToList(),
+                                                        Reviews = p.Reviews.Select(r => new { r.Rating, r.Comment }).ToList()
+                                                    });
+            
+            foreach(var product in productDetails)
+            {
+                System.Console.WriteLine($"Name: {product.Name} , Price: {product.Price}");
+                System.Console.WriteLine("Tags:");
+                foreach(var tag in product.Tags)
+                {
+                    System.Console.WriteLine($"- {tag}");
+                }
+                int totalReviews = product.Reviews.Count;
+                System.Console.WriteLine($"Total Reviews: {totalReviews}");
+                float averageRating = totalReviews > 0 ? (float)product.Reviews.Average(r => r.Rating) : 0;
+                System.Console.WriteLine($"Average Rating: {averageRating}");
+                System.Console.WriteLine("Reviews:");
+                foreach(var review in product.Reviews)
+                {
+                    System.Console.WriteLine($"- Rating: {review.Rating} , Comment: {review.Comment}");
+                }
+            }
+        }
     }
 }
