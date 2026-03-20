@@ -7,7 +7,27 @@ namespace ShopEasy.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<OrderItem> builder)
         {
-            
+            builder.ToTable("OrderItems", schema: "shop");
+ 
+            builder.Property(oi => oi.UnitPrice)
+                .IsRequired()
+                .HasColumnType("decimal(18,2)");
+ 
+            builder.Property(oi => oi.Quantity)
+                .IsRequired();
+ 
+            builder.HasIndex(oi => new { oi.OrderId, oi.ProductId })
+                .HasDatabaseName("IX_OrderItems_Order_Product");
+ 
+            builder.HasOne(oi => oi.Order)
+                .WithMany(o => o.OrderItems)
+                .HasForeignKey(oi => oi.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+ 
+            builder.HasOne(oi => oi.Product)
+                .WithMany(p => p.OrderItems)
+                .HasForeignKey(oi => oi.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
