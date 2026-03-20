@@ -9,6 +9,7 @@ namespace ShopEasy.Models
         public int StockQuantity { get; set; }
         public bool IsActive { get; set; } = true;
         public int CategoryId { get; set; }
+        public string DisplayName { set; get; } = string.Empty;
  
         public Category Category { get; set; } = null!;
         public ProductImage? ProductImage { get; set; }
