@@ -13,7 +13,7 @@ namespace ShopEasy.Data.Configurations
                 .IsRequired()
                 .HasMaxLength(30)
                 .HasConversion<string>()
-                .HasDefaultValue("Pending");
+                .HasDefaultValue(OrderStatus.Pending);
  
             builder.Property(o => o.TotalAmount)
                 .IsRequired()
