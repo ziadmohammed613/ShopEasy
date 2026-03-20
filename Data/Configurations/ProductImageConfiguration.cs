@@ -7,7 +7,22 @@ namespace ShopEasy.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<ProductImage> builder)
         {
-            
+            builder.ToTable("ProductImages", schema: "shop");
+
+            builder.Property(pi => pi.Url)
+                .IsRequired()
+                .HasMaxLength(500);
+ 
+            builder.Property(pi => pi.AltText)
+                .HasMaxLength(200);
+
+            builder.Property(pi => pi.IsPrimary)
+                .HasDefaultValue(false);
+
+            builder.HasOne(pi => pi.Product)
+                .WithOne(p => p.ProductImage)
+                .HasForeignKey<ProductImage>(pi => pi.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
