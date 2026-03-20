@@ -7,7 +7,15 @@ namespace ShopEasy.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<Tag> builder)
         {
+            builder.ToTable("Tags", schema: "shop");
             
+            builder.Property(t => t.Name)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            builder.HasIndex(t => t.Name)
+                .IsUnique()
+                .HasDatabaseName("IX_Tags_Name");
         }
     }
 }
