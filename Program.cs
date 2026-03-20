@@ -161,5 +161,24 @@ namespace ShopEasy
                 }
             }
         }
+        public static void TopFiveRatedProducts(this AppDbContext context)
+        {
+            var topProducts = context.Products.Include(p => p.Reviews)
+                                                .Where(p => p.IsActive)
+                                                .Select(p => new
+                                                {
+                                                    p.Name,
+                                                    p.Price,
+                                                    AverageRating = p.Reviews.Count > 0 ? (float)p.Reviews.Average(r => r.Rating) : 0
+                                                })
+                                                .OrderByDescending(p => p.AverageRating)
+                                                .ThenBy(p => p.Name)
+                                                .Take(5)
+                                                .AsNoTracking();
+            foreach(var product in topProducts)
+            {
+                System.Console.WriteLine($"Name: {product.Name} , Price: {product.Price} , Average Rating: {product.AverageRating}");
+            }
+        }
     }
 }
