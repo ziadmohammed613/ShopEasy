@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.EntityFrameworkCore;
 using ShopEasy.Data;
 using ShopEasy.Models;
 
@@ -81,6 +82,22 @@ namespace ShopEasy
                 customerProfile = new CustomerProfile { Address =  newAddr};
             }
 
+        }
+        public static void ViewProducts(this AppDbContext context)
+        {
+            var products = context.Products.Include(p => p.Category)
+                                            .Where(p => p.IsActive)
+                                            .OrderBy(p => p.Price)
+                                            .Join(context.Categories , p => p.CategoryId , c => c.CategoryId , (p, c) => new
+                                            {
+                                                ProductName = p.Name ,
+                                                p.Price ,
+                                                CategoryName = c.Name
+                                            }).AsNoTracking();;
+            foreach(var product in products)
+            {
+                System.Console.WriteLine(product);
+            }
         }
     }
 }
