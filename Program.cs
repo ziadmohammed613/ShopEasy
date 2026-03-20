@@ -38,6 +38,8 @@ namespace ShopEasy
                 context.Customers.Add(customer);
                 context.CustomerProfiles.Add(customerProfile);
 
+                context.SaveChanges();
+
                 System.Console.WriteLine("Customer Registerd Successfully!");
             }
             catch (Exception e)
@@ -52,7 +54,7 @@ namespace ShopEasy
                 System.Console.Write("CustomerId: ");
                 int customerId = int.Parse(Console.ReadLine()!);
 
-                var customerProfile = context.CustomerProfiles.SingleOrDefault(cp => cp.CustomerId == customerId);
+                var customerProfile = context.CustomerProfiles.Single(cp => cp.CustomerId == customerId);
                 System.Console.WriteLine(customerProfile);
             }
             catch
@@ -60,6 +62,25 @@ namespace ShopEasy
                 System.Console.WriteLine("Couldn't find customer");
             }
             
+        }
+        public static void UpdataAddress(this AppDbContext context)
+        {
+            try
+            {
+                System.Console.Write("Id: ");
+                int CId = int.Parse(Console.ReadLine()!);
+                var customer = context.CustomerProfiles.Single(cp => cp.CustomerId == CId);
+
+                System.Console.Write("New Address: ");
+                string newAddr = Console.ReadLine()!;
+                customer.Address = newAddr;
+                
+                context.SaveChanges();
+            }
+            catch
+            {
+                System.Console.WriteLine("No Profile Found");
+            }
         }
     }
 }
