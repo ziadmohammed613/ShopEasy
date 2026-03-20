@@ -10,5 +10,9 @@ namespace ShopEasy.Models
         public string? NationalId { get; set; }
  
         public Customer Customer { get; set; } = null!;
+        public override string ToString()
+        {
+            return $"{{ CustomerProfileId: {CustomerProfileId}, CustomerId: {CustomerId}, Address: {Address ?? "N/A"}, City: {City ?? "N/A"}, PostalCode: {PostalCode ?? "N/A"}, NationalId: {NationalId ?? "N/A"} }}";
+        }
     }
 }

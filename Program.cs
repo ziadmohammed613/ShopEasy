@@ -37,11 +37,29 @@ namespace ShopEasy
 
                 context.Customers.Add(customer);
                 context.CustomerProfiles.Add(customerProfile);
+
+                System.Console.WriteLine("Customer Registerd Successfully!");
             }
             catch (Exception e)
             {
                 System.Console.WriteLine($"Error! {e.Message}");
             }
+        }
+        public static void ViewCustomerProfile(this AppDbContext context)
+        {
+            try
+            {
+                System.Console.Write("CustomerId: ");
+                int customerId = int.Parse(Console.ReadLine()!);
+
+                var customerProfile = context.CustomerProfiles.SingleOrDefault(cp => cp.CustomerId == customerId);
+                System.Console.WriteLine(customerProfile);
+            }
+            catch
+            {
+                System.Console.WriteLine("Couldn't find customer");
+            }
+            
         }
     }
 }
