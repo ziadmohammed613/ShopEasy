@@ -1,4 +1,6 @@
 ﻿using System;
+using ShopEasy.Data;
+using ShopEasy.Models;
 
 namespace ShopEasy
 {
@@ -6,7 +8,8 @@ namespace ShopEasy
     {
         public static void Main()
         {
-            
+            // seeding
+            var context = new AppDbContext();
         }
     }
 }
