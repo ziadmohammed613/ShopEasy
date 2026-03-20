@@ -65,22 +65,22 @@ namespace ShopEasy
         }
         public static void UpdataAddress(this AppDbContext context)
         {
-            try
+            System.Console.Write("Id: ");
+            int CpId = int.Parse(Console.ReadLine()!);
+            var customerProfile = context.CustomerProfiles.SingleOrDefault(cp => cp.CustomerId == CpId);
+            System.Console.Write("New Address: ");
+            string newAddr = Console.ReadLine()!;
+            
+            if(customerProfile != null)
             {
-                System.Console.Write("Id: ");
-                int CId = int.Parse(Console.ReadLine()!);
-                var customer = context.CustomerProfiles.Single(cp => cp.CustomerId == CId);
-
-                System.Console.Write("New Address: ");
-                string newAddr = Console.ReadLine()!;
-                customer.Address = newAddr;
-                
+                customerProfile.Address = newAddr;
                 context.SaveChanges();
             }
-            catch
+            else
             {
-                System.Console.WriteLine("No Profile Found");
+                customerProfile = new CustomerProfile { Address =  newAddr};
             }
+
         }
     }
 }
