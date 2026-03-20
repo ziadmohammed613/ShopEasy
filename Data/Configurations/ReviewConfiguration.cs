@@ -7,7 +7,30 @@ namespace ShopEasy.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<Review> builder)
         {
-            
+            builder.ToTable("Reviews", schema: "shop");
+ 
+            builder.Property(r => r.Rating)
+                .IsRequired();
+ 
+            builder.Property(r => r.Comment)
+                .HasMaxLength(1000)
+                .IsRequired(false);
+ 
+            builder.Property(r => r.CreatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+ 
+            builder.HasIndex(r => new { r.ProductId, r.CustomerId })
+                .HasDatabaseName("IX_Reviews_Product_Customer");
+ 
+            builder.HasOne(r => r.Product)
+                .WithMany(p => p.Reviews)
+                .HasForeignKey(r => r.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+ 
+            builder.HasOne(r => r.Customer)
+                .WithMany(c => c.Reviews)
+                .HasForeignKey(r => r.CustomerId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
