@@ -180,5 +180,10 @@ namespace ShopEasy
                 System.Console.WriteLine($"Name: {product.Name} , Price: {product.Price} , Average Rating: {product.AverageRating}");
             }
         }
+        public async static void DeactivateOutOfStockProducts(this AppDbContext context)
+        {
+            await context.Products.Where(p => p.StockQuantity == 0)
+                            .ExecuteUpdateAsync(p => p.SetProperty(x => x.IsActive, false));
+        }
     }
 }
