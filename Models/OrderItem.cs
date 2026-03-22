@@ -10,5 +10,9 @@ namespace ShopEasy.Models
  
         public Order Order { get; set; } = null!;
         public Product Product { get; set; } = null!;
+        public override string ToString()
+        {
+            return $"OrderItemId: {OrderItemId}, OrderId: {OrderId}, ProductId: {ProductId}, Quantity: {Quantity}, UnitPrice: {UnitPrice}";
+        }
     }
 }

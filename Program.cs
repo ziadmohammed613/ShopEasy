@@ -383,5 +383,36 @@ namespace ShopEasy
                 System.Console.WriteLine(review);
             }
         }
+        public static void LoadCustomerData(this AppDbContext context)
+        {
+            System.Console.Write("Customer Id: ");
+            int customerId = int.Parse(Console.ReadLine()!);
+
+            var data = context.Customers.Include(c => c.Orders)
+                                        .ThenInclude(o => o.OrderItems)
+                                        .Include(c => c.Reviews)
+                                        .AsSplitQuery()
+                                        .SingleOrDefault(c => c.CustomerId == customerId);
+
+            var orders = data?.Orders.Select(o => new {
+                                                    Order = o ,
+                                                    o.OrderItems
+                                                }).ToList();
+
+            var reviews = data?.Reviews.ToList();
+            foreach(var order in orders!)
+            {
+                System.Console.WriteLine($"Order:\n{order.Order}\nOrderItems:");
+                foreach(var orderItem in order.OrderItems)
+                {
+                    System.Console.WriteLine(orderItem);
+                }
+            }
+            System.Console.WriteLine("Reviews:");
+            foreach(var review in reviews!)
+            {
+                System.Console.WriteLine(review);
+            }
+        }
     }
 }
