@@ -343,7 +343,7 @@ namespace ShopEasy
                 try
                 {
                     var discount = context.Discounts.Single(d => d.Code == discountCode);
-                    if(!discount.IsActive || discount.ExpiresAt == null)
+                    if(!discount.IsActive || discount.ExpiresAt <= DateTime.UtcNow)
                     {
                         throw new InvalidOperationException("Either discount is inactive or expiration date is invalid");
                     }
@@ -365,6 +365,13 @@ namespace ShopEasy
                     System.Console.WriteLine($"Exception: {e.Message}");
                 }
             }
+        }
+        public static void DeleteExpiredDiscounts(this AppDbContext context)
+        {
+            context.Discounts.Where(d => !d.IsActive || d.ExpiresAt <= DateTime.UtcNow)
+                                .ExecuteDelete();
+            var rows = context.ChangeTracker.Entries();
+            System.Console.WriteLine($"{rows} row(s) affected");
         }
     }
 }
