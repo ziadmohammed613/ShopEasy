@@ -431,5 +431,19 @@ namespace ShopEasy
                 }
             }
         }
+        public static void ViewProductsQuantitySold(this AppDbContext context)
+        {
+            var products = context.Products.Include(p => p.OrderItems)
+                                        .GroupJoin(context.OrderItems, p => p.ProductId, oi => oi.ProductId, (product, orderItems) => new
+                                        {
+                                            ProductName = product.Name,
+                                            TotalSold = orderItems.Sum(oi => oi.Quantity)
+                                        }).OrderByDescending(g => g.TotalSold);
+
+            foreach (var product in products)
+            {
+                System.Console.WriteLine($"{product.ProductName} - {product.TotalSold}");
+            }
+        }
     }
 }
