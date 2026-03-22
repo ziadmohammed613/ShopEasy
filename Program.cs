@@ -319,6 +319,7 @@ namespace ShopEasy
             var report = context.Orders.AsNoTracking()
                                         .Where(o => o.Status == OrderStatus.Delivered)
                                         .GroupBy(o => o.PlacedAt.Month)
+                                        .OrderBy(o => o.Key)
                                         .Select(g => new
                                         {
                                            Month = g.Key ,
