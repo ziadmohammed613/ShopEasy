@@ -185,5 +185,73 @@ namespace ShopEasy
             await context.Products.Where(p => p.StockQuantity == 0)
                             .ExecuteUpdateAsync(p => p.SetProperty(x => x.IsActive, false));
         }
+        public static void PlaceOrder(this AppDbContext context)
+        {
+            System.Console.Write("Customer Id: ");
+            int customerId = int.Parse(Console.ReadLine()!);
+            using(var transaction = context.Database.BeginTransaction())
+            {
+                try
+                {
+                    var customer = context.Customers.Find(customerId);
+                    var order = new Order() { Customer = customer! , PlacedAt = DateTime.Now};
+                    var orderItems = new List<OrderItem>();
+                    AddOrderItems(orderItems, order);
+                    context.Orders.Add(order);
+                    context.OrderItems.AddRange(orderItems);
+                    context.SaveChanges();
+
+                    context.Products.Include(p => p.OrderItems)
+                                    .Where(p => orderItems.Any(oi => oi.ProductId == p.ProductId))
+                                    .ToList()
+                                    .ForEach(p =>
+                                    {
+                                        var orderedQuantity = orderItems.Where(oi => oi.ProductId == p.ProductId).Sum(oi => oi.Quantity);
+                                        p.StockQuantity -= orderedQuantity;
+                                        if (p.StockQuantity < 0)
+                                        {
+                                            throw new Exception($"Not enough stock for product {p.Name}");
+                                        }
+                                    });
+                    context.SaveChanges();
+
+                    var totalPrice = orderItems.Sum(oi => oi.Quantity * oi.UnitPrice);
+                    order.TotalAmount = totalPrice;
+                    context.SaveChanges();
+
+                    var payment = new Payment() { Order = order };
+                    context.Payments.Add(payment);
+                    context.SaveChanges();
+
+                    transaction.Commit();
+                }
+                catch (Exception)
+                {
+                    transaction.Rollback();
+                }
+            }
+        }
+        public static void AddOrderItems(List<OrderItem> orderItems, Order order)
+        {
+            char continueAdding;
+            do
+            {
+                System.Console.Write("Product Id: ");
+                int productId = int.Parse(Console.ReadLine()!);
+                System.Console.Write("Quantity: ");
+                int quantity = int.Parse(Console.ReadLine()!);
+                var orderItem = new OrderItem() { ProductId = productId, Quantity = quantity, Order = order };
+                orderItems.Add(orderItem);
+
+                System.Console.Write("Add another item? (Y/N): ");
+                continueAdding = char.ToUpper(Console.ReadKey().KeyChar);
+                System.Console.WriteLine();
+                if(continueAdding != 'Y' && continueAdding != 'N')
+                {
+                    System.Console.Write("Invalid input. Please enter Y or N, Insert Again: ");
+                    continueAdding = char.ToUpper(Console.ReadKey().KeyChar);
+                }
+            } while (continueAdding == 'Y');
+        }
     }
 }
