@@ -11,7 +11,8 @@ namespace ShopEasy.Data
         {
             string appsettings = File.ReadAllText("./Data/appsettings.json");
             string connectionString = JsonSerializer.Deserialize<Dictionary<string,string>>(appsettings)!["ConnectionString"];
-            optionsBuilder.UseSqlServer(connectionString);
+
+            optionsBuilder.UseLazyLoadingProxies().UseSqlServer(connectionString);
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

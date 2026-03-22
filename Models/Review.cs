@@ -11,5 +11,9 @@ namespace ShopEasy.Models
  
         public Product Product { get; set; } = null!;
         public Customer Customer { get; set; } = null!;
+        public override string ToString()
+        {
+            return $"ReviewId: {ReviewId}, ProductId: {ProductId}, CustomerId: {CustomerId}, Rating: {Rating}, Comment: {Comment}, CreatedAt: {CreatedAt}";
+        }
     }
 }

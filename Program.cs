@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using ShopEasy.Data;
 using ShopEasy.Models;
+using Microsoft.EntityFrameworkCore.Proxies;
 
 namespace ShopEasy
 {
@@ -372,6 +373,15 @@ namespace ShopEasy
                                 .ExecuteDelete();
             var rows = context.ChangeTracker.Entries();
             System.Console.WriteLine($"{rows} row(s) affected");
+        }
+        public static void ViewReviews(this AppDbContext context)
+        {
+            // Lazy Loading Automatically
+            var reviews = context.Reviews.ToList();
+            foreach(var review in reviews)
+            {
+                System.Console.WriteLine(review);
+            }
         }
     }
 }

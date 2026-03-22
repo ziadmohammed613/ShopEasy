@@ -15,7 +15,7 @@ namespace ShopEasy.Models
         public ProductImage? ProductImage { get; set; }
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
         public ICollection<ProductTag> ProductTags { get; set; } = new List<ProductTag>();
-        public ICollection<Review> Reviews { get; set; } = new List<Review>();
+        public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
         public override string ToString()
         {
             return $"{{ ProductId: {ProductId}, Name: {Name}, SKU: {SKU}, Price: {Price}, StockQuantity: {StockQuantity}, IsActive: {IsActive}, CategoryId: {CategoryId} }}";

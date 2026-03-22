@@ -10,6 +10,6 @@ namespace ShopEasy.Models
  
         public CustomerProfile? CustomerProfile { get; set; }
         public ICollection<Order> Orders { get; set; } = new List<Order>();
-        public ICollection<Review> Reviews { get; set; } = new List<Review>();
+        public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
     }
 }
