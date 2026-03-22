@@ -331,5 +331,40 @@ namespace ShopEasy
                 System.Console.WriteLine($"Month: {month.Month}, Revenue: {month.Revenue}");
             }
         }
+        public static void ApplyDiscount(this AppDbContext context)
+        {
+            System.Console.Write("Order Id: "); 
+            int orderId = int.Parse(Console.ReadLine()!);
+            
+            System.Console.Write("Discount Code: ");
+            string discountCode = Console.ReadLine()!;
+            using(var transaction = context.Database.BeginTransaction())
+            {
+                try
+                {
+                    var discount = context.Discounts.Single(d => d.Code == discountCode);
+                    if(!discount.IsActive || discount.ExpiresAt == null)
+                    {
+                        throw new InvalidOperationException("Either discount is inactive or expiration date is invalid");
+                    }
+                    if(discount.CurrentUses >= discount.MaxUses)
+                    {
+                        throw new InvalidOperationException("Discount has already reached max uses");
+                    }
+
+                    context.Orders.Where(o => o.OrderId == orderId)
+                                    .ExecuteUpdate(o => o.SetProperty(ta => ta.TotalAmount , ta => ta.TotalAmount + (ta.TotalAmount * (discount.Percentage / 100) ) ));
+                    context.SaveChanges();
+
+                    discount.CurrentUses++;
+                    context.SaveChanges();
+                }
+                catch (Exception e)
+                {
+                    transaction.Rollback();
+                    System.Console.WriteLine($"Exception: {e.Message}");
+                }
+            }
+        }
     }
 }
