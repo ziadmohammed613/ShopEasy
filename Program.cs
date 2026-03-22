@@ -253,5 +253,27 @@ namespace ShopEasy
                 }
             } while (continueAdding == 'Y');
         }
+        public static void ViewOrderHistory(this AppDbContext context)
+        {
+            System.Console.Write("Customer Id: ");
+            int customerId = int.Parse(Console.ReadLine()!);
+
+            var orders = context.Orders.Include(o => o.OrderItems)
+                                        .Include(o => o.Payment)
+                                        .Where(o => o.CustomerId == customerId)
+                                        .OrderByDescending(o => o.PlacedAt)
+                                        .ToList();
+
+            var recentOrder = orders.FirstOrDefault();
+            if (recentOrder != null)
+            {
+                System.Console.WriteLine($"Most Recent Order:\n{recentOrder}");
+            }
+            System.Console.WriteLine("Orders:");
+            foreach(var order in orders)
+            {
+                System.Console.WriteLine(order);
+            }
+        }
     }
 }
