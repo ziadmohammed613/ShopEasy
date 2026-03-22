@@ -9,6 +9,7 @@ namespace ShopEasy
     {
         public static void DataSeed(this AppDbContext context)
         {
+            // there's a problem with identity , so I can't seed data
             if (!context.Categories.Any())
             {
                 var json = File.ReadAllText("./Models/JsonData/categories.json");

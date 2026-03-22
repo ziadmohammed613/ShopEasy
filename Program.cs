@@ -180,10 +180,12 @@ namespace ShopEasy
                 System.Console.WriteLine($"Name: {product.Name} , Price: {product.Price} , Average Rating: {product.AverageRating}");
             }
         }
-        public async static void DeactivateOutOfStockProducts(this AppDbContext context)
+        public static void DeactivateOutOfStockProducts(this AppDbContext context)
         {
-            await context.Products.Where(p => p.StockQuantity == 0)
-                            .ExecuteUpdateAsync(p => p.SetProperty(x => x.IsActive, false));
+            context.Products.Where(p => p.StockQuantity == 0)
+                            .ExecuteUpdate(p => p.SetProperty(x => x.IsActive, false));
+            var tracked = context.ChangeTracker.Entries();
+            System.Console.WriteLine($"{tracked.Count()} row(s) affected");
         }
         public static void PlaceOrder(this AppDbContext context)
         {
@@ -262,6 +264,7 @@ namespace ShopEasy
                                         .Include(o => o.Payment)
                                         .Where(o => o.CustomerId == customerId)
                                         .OrderByDescending(o => o.PlacedAt)
+                                        .AsNoTracking()
                                         .ToList();
 
             var recentOrder = orders.FirstOrDefault();
@@ -273,6 +276,42 @@ namespace ShopEasy
             foreach(var order in orders)
             {
                 System.Console.WriteLine(order);
+            }
+        }
+        public static void CancelPendingOrder(this AppDbContext context)
+        {
+            System.Console.Write("Customer Id: ");
+            int customerId = int.Parse(Console.ReadLine()!);
+
+            System.Console.WriteLine("Order Id: "); 
+            int orderId = int.Parse(Console.ReadLine()!);
+
+            using(var transaction = context.Database.BeginTransaction())
+            {
+                try
+                {
+                    context.Orders.Where(o => o.OrderId == orderId && o.CustomerId == customerId)
+                                    .ExecuteUpdate(o => o.SetProperty(s => s.Status , s => OrderStatus.Cancelled));
+                    context.SaveChanges();
+
+                    context.OrderItems.Include(oi => oi.Order)
+                                    .Include(oi => oi.Product)
+                                    .Where(oi => oi.OrderId == orderId)
+                                    .ExecuteUpdate(oi => oi.SetProperty(
+                                        sq => sq.Product.StockQuantity , sq => sq.Product.StockQuantity + sq.Quantity
+                                        ));
+                    context.SaveChanges();
+
+                    context.Orders.Include(o => o.Payment)
+                                    .Where(o => o.OrderId == orderId)
+                                    .ExecuteUpdate(o => o.SetProperty(ps => ps.Payment!.Status , ps => PaymentStatus.Refunded));
+                    context.SaveChanges();
+                }
+                catch (Exception e)
+                {
+                    transaction.Rollback();
+                    System.Console.WriteLine($"Exception: {e.Message}");
+                }
             }
         }
     }
