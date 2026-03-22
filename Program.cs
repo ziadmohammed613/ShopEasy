@@ -413,6 +413,23 @@ namespace ShopEasy
             {
                 System.Console.WriteLine(review);
             }
+        }public static void ViewCustomersWithNoOrders(this AppDbContext context)
+        {
+            var customers = context.Customers.Include(c => c.Orders)
+                                                .GroupJoin(context.Orders, c => c.CustomerId, o => o.OrderId, (customer, orders) => new
+                                                {
+                                                    CustomerName = customer.FullName,
+                                                    CustomerEmail = customer.Email,
+                                                    ordersCount = orders.Count()
+                                                });
+
+            foreach (var customer in customers)
+            {
+                if (customer.ordersCount == 0)
+                {
+                    System.Console.WriteLine($"{customer.CustomerName} - {customer.CustomerEmail}");
+                }
+            }
         }
     }
 }
