@@ -314,5 +314,21 @@ namespace ShopEasy
                 }
             }
         }
+        public static void MonthlyRevenueReport(this AppDbContext context)
+        {
+            var report = context.Orders.AsNoTracking()
+                                        .Where(o => o.Status == OrderStatus.Delivered)
+                                        .GroupBy(o => o.PlacedAt.Month)
+                                        .Select(g => new
+                                        {
+                                           Month = g.Key ,
+                                           Revenue = g.Sum(o => o.TotalAmount) 
+                                        });
+
+            foreach(var month in report)
+            {
+                System.Console.WriteLine($"Month: {month.Month}, Revenue: {month.Revenue}");
+            }
+        }
     }
 }
