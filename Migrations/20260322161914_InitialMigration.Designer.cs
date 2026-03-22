@@ -12,7 +12,7 @@ using ShopEasy.Data;
 namespace ShopEasy.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260320051326_InitialMigration")]
+    [Migration("20260322161914_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -196,10 +196,8 @@ namespace ShopEasy.Migrations
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
                         .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)")
-                        .HasDefaultValue("Pending");
+                        .HasColumnType("nvarchar(30)");
 
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
@@ -297,9 +295,6 @@ namespace ShopEasy.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasComputedColumnSql("[Name] + '(' + [SKU] + ')'");
 
-                    b.Property<int>("IX_Products_SKU")
-                        .HasColumnType("int");
-
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
@@ -321,7 +316,7 @@ namespace ShopEasy.Migrations
 
                     b.HasKey("ProductId");
 
-                    b.HasIndex("IX_Products_SKU");
+                    b.HasIndex("CategoryId");
 
                     b.HasIndex("SKU")
                         .IsUnique();
@@ -500,9 +495,10 @@ namespace ShopEasy.Migrations
                 {
                     b.HasOne("ShopEasy.Models.Category", "Category")
                         .WithMany("Products")
-                        .HasForeignKey("IX_Products_SKU")
+                        .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("IX_Products_SKU");
 
                     b.Navigation("Category");
                 });

@@ -19,7 +19,8 @@ namespace ShopEasy.Data.Configurations
 
             builder.HasOne(p => p.Category)
                     .WithMany(c => c.Products)
-                    .HasForeignKey("IX_Products_SKU")
+                    .HasForeignKey(p => p.CategoryId)
+                    .HasConstraintName("IX_Products_SKU")
                     .OnDelete(DeleteBehavior.Restrict);
         }
     }

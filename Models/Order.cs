@@ -4,7 +4,7 @@ namespace ShopEasy.Models
     {
         public int OrderId { get; set; }
         public int CustomerId { get; set; }
-        public OrderStatus Status { get; set; }
+        public OrderStatus Status { get; set; } = OrderStatus.Pending;
         public decimal TotalAmount { get; set; }
         public DateTime PlacedAt { get; set; } = DateTime.UtcNow;
         public DateTime? ShippedAt { get; set; }

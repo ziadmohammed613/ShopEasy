@@ -104,15 +104,14 @@ namespace ShopEasy.Migrations
                     StockQuantity = table.Column<int>(type: "int", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
                     CategoryId = table.Column<int>(type: "int", nullable: false),
-                    DisplayName = table.Column<string>(type: "nvarchar(max)", nullable: false, computedColumnSql: "[Name] + '(' + [SKU] + ')'"),
-                    IX_Products_SKU = table.Column<int>(type: "int", nullable: false)
+                    DisplayName = table.Column<string>(type: "nvarchar(max)", nullable: false, computedColumnSql: "[Name] + '(' + [SKU] + ')'")
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Products", x => x.ProductId);
                     table.ForeignKey(
-                        name: "FK_Products_Categories_IX_Products_SKU",
-                        column: x => x.IX_Products_SKU,
+                        name: "IX_Products_SKU",
+                        column: x => x.CategoryId,
                         principalSchema: "shop",
                         principalTable: "Categories",
                         principalColumn: "CategoryId",
@@ -152,7 +151,7 @@ namespace ShopEasy.Migrations
                     OrderId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CustomerId = table.Column<int>(type: "int", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false, defaultValue: "Pending"),
+                    Status = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false),
                     TotalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     PlacedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
                     ShippedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
@@ -381,10 +380,10 @@ namespace ShopEasy.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Products_IX_Products_SKU",
+                name: "IX_Products_CategoryId",
                 schema: "shop",
                 table: "Products",
-                column: "IX_Products_SKU");
+                column: "CategoryId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Products_SKU",

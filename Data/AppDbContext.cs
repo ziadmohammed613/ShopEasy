@@ -29,6 +29,8 @@ namespace ShopEasy.Data
             modelBuilder.ApplyConfiguration(new PaymentConfiguration());
             modelBuilder.ApplyConfiguration(new ReviewConfiguration());
             modelBuilder.ApplyConfiguration(new DiscountConfiguration());
+
+            this.DataSeed(modelBuilder);
         }
         public DbSet<Customer> Customers { set; get; }
         public DbSet<CustomerProfile> CustomerProfiles { set; get; }
