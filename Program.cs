@@ -12,50 +12,31 @@ namespace ShopEasy
         {
             var context = new AppDbContext();
         }
-        public static void Register(this AppDbContext context)
+        public static void Register(this AppDbContext context, Customer customer , CustomerProfile customerProfile)
         {
-            try
+            using(var transaction = context.Database.BeginTransaction())
             {
-                System.Console.WriteLine("Customer:");
-                var customer = new Customer();
-                System.Console.Write("FullName: ");
-                customer.FullName = Console.ReadLine()!;
-                System.Console.Write("Email: ");
-                customer.Email = Console.ReadLine()!;
-                System.Console.Write("PhoneNumber: ");
-                customer.PhoneNumber = Console.ReadLine();
+                try
+                {
 
-                System.Console.WriteLine("CustomerProfile:");
-                var customerProfile = new CustomerProfile();
-                customerProfile.Customer = customer;
-                System.Console.Write("Address:");
-                customerProfile.Address = Console.ReadLine();
-                System.Console.Write("City:");
-                customerProfile.City = Console.ReadLine();
-                System.Console.Write("PostalCode:");
-                customerProfile.PostalCode = Console.ReadLine();
-                System.Console.Write("NationalId:");
-                customerProfile.NationalId = Console.ReadLine();
+                    context.Customers.Add(customer);
+                    context.CustomerProfiles.Add(customerProfile);
+                    context.SaveChanges();
 
-                context.Customers.Add(customer);
-                context.CustomerProfiles.Add(customerProfile);
-
-                context.SaveChanges();
-
-                System.Console.WriteLine("Customer Registerd Successfully!");
-            }
-            catch (Exception e)
-            {
-                System.Console.WriteLine($"Error! {e.Message}");
+                    transaction.Commit();
+                    System.Console.WriteLine("Customer Registerd Successfully!");
+                }
+                catch (Exception e)
+                {
+                    transaction.Rollback();
+                    System.Console.WriteLine($"Exception! {e.Message}");
+                }
             }
         }
-        public static void ViewCustomerProfile(this AppDbContext context)
+        public static void ViewCustomerProfile(this AppDbContext context, int customerId)
         {
             try
             {
-                System.Console.Write("CustomerId: ");
-                int customerId = int.Parse(Console.ReadLine()!);
-
                 var customerProfile = context.CustomerProfiles.Single(cp => cp.CustomerId == customerId);
                 System.Console.WriteLine(customerProfile);
             }
@@ -65,22 +46,21 @@ namespace ShopEasy
             }
             
         }
-        public static void UpdataAddress(this AppDbContext context)
+        public static void UpdataAddress(this AppDbContext context, Customer customer , string newAddr)
         {
-            System.Console.Write("Id: ");
-            int CpId = int.Parse(Console.ReadLine()!);
-            var customerProfile = context.CustomerProfiles.SingleOrDefault(cp => cp.CustomerId == CpId);
-            System.Console.Write("New Address: ");
-            string newAddr = Console.ReadLine()!;
+            var customerProfile = context.CustomerProfiles.Include(cp => cp.Customer)
+                                                            .SingleOrDefault(cp => cp.Customer == customer);
             
             if(customerProfile != null)
             {
                 customerProfile.Address = newAddr;
                 context.SaveChanges();
+                System.Console.WriteLine("Address Updated Successfully");
             }
             else
             {
-                customerProfile = new CustomerProfile { Address =  newAddr};
+                customerProfile = new CustomerProfile { Customer = customer , Address =  newAddr };
+                System.Console.WriteLine("New Profile Created");
             }
 
         }
@@ -100,66 +80,61 @@ namespace ShopEasy
                 System.Console.WriteLine(product);
             }
         }
-        public static void SearchProduct(this AppDbContext context)
+        public enum SearchBy { Category , Name }
+        public static void SearchProduct(this AppDbContext context, SearchBy search , string Key)
         {
-            System.Console.Write("Search by 1.Category 2.Name :");
-            int search = int.Parse(Console.ReadLine()!);
-            if(search == 1)
-            { // category
-                System.Console.Write("Category Name: ");
+            if(search == SearchBy.Category)
+            {
                 var products = context.Products.Include(p => p.Category)
                                         .Where(p => p.IsActive)
-                                        .Where(p => p.Category.Name.Contains(Console.ReadLine()!))
-                                        .AsNoTracking();
-            }
-            else if(search == 2)
-            { // name
-                Console.Write("Product Name: ");
-                var products = context.Products.Where(p => p.IsActive)
-                                        .Where(p => p.Name.Contains(Console.ReadLine()!))
+                                        .Where(p => p.Category.Name.Contains(Key))
                                         .AsNoTracking();
                 foreach(var product in products)
                 {
                     System.Console.WriteLine(product);
                 }
             }
-            else
+            else if(search == SearchBy.Name)
             {
-                System.Console.WriteLine("Invalid Value");
+                var products = context.Products.Where(p => p.IsActive)
+                                        .Where(p => p.Name.Contains(Key))
+                                        .AsNoTracking();
+                foreach(var product in products)
+                {
+                    System.Console.WriteLine(product);
+                }
             }
         }
-        public static void ViewProductDetails(this AppDbContext context)
+        public static void ViewProductDetails(this AppDbContext context, Product product)
         {
-            System.Console.Write("Product Id: ");
-            int productId = int.Parse(Console.ReadLine()!);
-            var productDetails = context.Products.Include(p => p.ProductTags)
+            var details = context.Products.Include(p => p.ProductTags)
                                                     .ThenInclude(pt => pt.Tag)
                                                     .Include(p => p.Reviews)
+                                                    .Where(p => p == product)
                                                     .Select(p => new
                                                     {
                                                         p.Name,
                                                         p.Price,
                                                         Tags = p.ProductTags.Select(pt => pt.Tag.Name).ToList(),
                                                         Reviews = p.Reviews.Select(r => new { r.Rating, r.Comment }).ToList()
-                                                    });
+                                                    }).Single();
             
-            foreach(var product in productDetails)
+            System.Console.WriteLine($"Name: {details.Name} , Price: {details.Price}");
+            System.Console.WriteLine("Tags:");
+            foreach(var tag in details.Tags)
             {
-                System.Console.WriteLine($"Name: {product.Name} , Price: {product.Price}");
-                System.Console.WriteLine("Tags:");
-                foreach(var tag in product.Tags)
-                {
-                    System.Console.WriteLine($"- {tag}");
-                }
-                int totalReviews = product.Reviews.Count;
-                System.Console.WriteLine($"Total Reviews: {totalReviews}");
-                float averageRating = totalReviews > 0 ? (float)product.Reviews.Average(r => r.Rating) : 0;
-                System.Console.WriteLine($"Average Rating: {averageRating}");
-                System.Console.WriteLine("Reviews:");
-                foreach(var review in product.Reviews)
-                {
-                    System.Console.WriteLine($"- Rating: {review.Rating} , Comment: {review.Comment}");
-                }
+                System.Console.WriteLine($"- {tag}");
+            }
+            int totalReviews = details.Reviews.Count;
+            System.Console.WriteLine($"Total Reviews: {totalReviews}");
+
+            double averageRating = totalReviews > 0 ? details.Reviews.Average(r => r.Rating) : 0;
+            System.Console.WriteLine($"Average Rating: {averageRating}");
+
+            System.Console.WriteLine("Reviews:");
+            foreach(var review in details.Reviews)
+            {
+                System.Console.WriteLine($"- Rating: {review.Rating} , Comment: {review.Comment}");
             }
         }
         public static void TopFiveRatedProducts(this AppDbContext context)
@@ -188,21 +163,19 @@ namespace ShopEasy
             var tracked = context.ChangeTracker.Entries();
             System.Console.WriteLine($"{tracked.Count()} row(s) affected");
         }
-        public static void PlaceOrder(this AppDbContext context)
+        public static void PlaceOrder(this AppDbContext context , Customer customer , List<OrderItem> orderItems)
         {
-            System.Console.Write("Customer Id: ");
-            int customerId = int.Parse(Console.ReadLine()!);
             using(var transaction = context.Database.BeginTransaction())
             {
                 try
                 {
-                    var customer = context.Customers.Find(customerId);
-                    var order = new Order() { Customer = customer! , PlacedAt = DateTime.Now};
-                    var orderItems = new List<OrderItem>();
-                    AddOrderItems(orderItems, order);
+                    var order = new Order() { Customer = customer , PlacedAt = DateTime.Now , OrderItems = orderItems };
                     context.Orders.Add(order);
+                    context.SaveChanges();
+                    
                     context.OrderItems.AddRange(orderItems);
                     context.SaveChanges();
+                    // exception here
 
                     context.Products.Include(p => p.OrderItems)
                                     .Where(p => orderItems.Any(oi => oi.ProductId == p.ProductId))
@@ -227,14 +200,17 @@ namespace ShopEasy
                     context.SaveChanges();
 
                     transaction.Commit();
+                    System.Console.WriteLine("Order Placed Successfully!");
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
                     transaction.Rollback();
+                    System.Console.WriteLine($"Order Failed With Exception : {e.Message}");
+                    throw;
                 }
             }
         }
-        public static void AddOrderItems(List<OrderItem> orderItems, Order order)
+        /* public static void AddOrderItems(List<OrderItem> orderItems, Order order)
         {
             char continueAdding;
             do
@@ -255,15 +231,12 @@ namespace ShopEasy
                     continueAdding = char.ToUpper(Console.ReadKey().KeyChar);
                 }
             } while (continueAdding == 'Y');
-        }
-        public static void ViewOrderHistory(this AppDbContext context)
+        } */
+        public static void ViewOrderHistory(this AppDbContext context , Customer customer)
         {
-            System.Console.Write("Customer Id: ");
-            int customerId = int.Parse(Console.ReadLine()!);
-
             var orders = context.Orders.Include(o => o.OrderItems)
                                         .Include(o => o.Payment)
-                                        .Where(o => o.CustomerId == customerId)
+                                        .Where(o => o.Customer == customer)
                                         .OrderByDescending(o => o.PlacedAt)
                                         .AsNoTracking()
                                         .ToList();

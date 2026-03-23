@@ -12,7 +12,7 @@ namespace ShopEasy.Data
             string appsettings = File.ReadAllText("./Data/appsettings.json");
             string connectionString = JsonSerializer.Deserialize<Dictionary<string,string>>(appsettings)!["ConnectionString"];
 
-            optionsBuilder.UseLazyLoadingProxies().UseSqlServer(connectionString);
+            optionsBuilder.UseSqlServer(connectionString);
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -31,7 +31,7 @@ namespace ShopEasy.Data
             modelBuilder.ApplyConfiguration(new ReviewConfiguration());
             modelBuilder.ApplyConfiguration(new DiscountConfiguration());
 
-            this.DataSeed(modelBuilder);
+            // this.DataSeed(modelBuilder);
         }
         public DbSet<Customer> Customers { set; get; }
         public DbSet<CustomerProfile> CustomerProfiles { set; get; }
