@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using ShopEasy.Data;
 using ShopEasy.Models;
-using Microsoft.EntityFrameworkCore.Proxies;
 
 namespace ShopEasy
 {
@@ -173,12 +172,14 @@ namespace ShopEasy
                     context.Orders.Add(order);
                     context.SaveChanges();
                     
-                    context.OrderItems.AddRange(orderItems);
-                    context.SaveChanges();
+                    // context.OrderItems.AddRange(orderItems);
+                    // context.SaveChanges();
                     // exception here
 
+                    var productIds = context.Products.Select(p => p.ProductId).ToList();
+
                     context.Products.Include(p => p.OrderItems)
-                                    .Where(p => orderItems.Any(oi => oi.ProductId == p.ProductId))
+                                    .Where(p => productIds.Contains(p.ProductId))
                                     .ToList()
                                     .ForEach(p =>
                                     {
@@ -206,32 +207,10 @@ namespace ShopEasy
                 {
                     transaction.Rollback();
                     System.Console.WriteLine($"Order Failed With Exception : {e.Message}");
-                    throw;
+                    // throw;
                 }
             }
         }
-        /* public static void AddOrderItems(List<OrderItem> orderItems, Order order)
-        {
-            char continueAdding;
-            do
-            {
-                System.Console.Write("Product Id: ");
-                int productId = int.Parse(Console.ReadLine()!);
-                System.Console.Write("Quantity: ");
-                int quantity = int.Parse(Console.ReadLine()!);
-                var orderItem = new OrderItem() { ProductId = productId, Quantity = quantity, Order = order };
-                orderItems.Add(orderItem);
-
-                System.Console.Write("Add another item? (Y/N): ");
-                continueAdding = char.ToUpper(Console.ReadKey().KeyChar);
-                System.Console.WriteLine();
-                if(continueAdding != 'Y' && continueAdding != 'N')
-                {
-                    System.Console.Write("Invalid input. Please enter Y or N, Insert Again: ");
-                    continueAdding = char.ToUpper(Console.ReadKey().KeyChar);
-                }
-            } while (continueAdding == 'Y');
-        } */
         public static void ViewOrderHistory(this AppDbContext context , Customer customer)
         {
             var orders = context.Orders.Include(o => o.OrderItems)
