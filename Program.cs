@@ -252,34 +252,31 @@ namespace ShopEasy
                 System.Console.WriteLine(order);
             }
         }
-        public static void CancelPendingOrder(this AppDbContext context)
+        public static void CancelPendingOrder(this AppDbContext context , Order order)
         {
-            System.Console.Write("Customer Id: ");
-            int customerId = int.Parse(Console.ReadLine()!);
-
-            System.Console.WriteLine("Order Id: "); 
-            int orderId = int.Parse(Console.ReadLine()!);
-
             using(var transaction = context.Database.BeginTransaction())
             {
                 try
                 {
-                    context.Orders.Where(o => o.OrderId == orderId && o.CustomerId == customerId)
+                    context.Orders.Where(o => o == order)
                                     .ExecuteUpdate(o => o.SetProperty(s => s.Status , s => OrderStatus.Cancelled));
                     context.SaveChanges();
 
                     context.OrderItems.Include(oi => oi.Order)
                                     .Include(oi => oi.Product)
-                                    .Where(oi => oi.OrderId == orderId)
+                                    .Where(oi => oi.Order == order)
                                     .ExecuteUpdate(oi => oi.SetProperty(
                                         sq => sq.Product.StockQuantity , sq => sq.Product.StockQuantity + sq.Quantity
                                         ));
                     context.SaveChanges();
 
                     context.Orders.Include(o => o.Payment)
-                                    .Where(o => o.OrderId == orderId)
+                                    .Where(o => o == order)
                                     .ExecuteUpdate(o => o.SetProperty(ps => ps.Payment!.Status , ps => PaymentStatus.Refunded));
                     context.SaveChanges();
+
+                    transaction.Commit();
+                    System.Console.WriteLine("Order Cancelled Successfully!");
                 }
                 catch (Exception e)
                 {
@@ -305,13 +302,8 @@ namespace ShopEasy
                 System.Console.WriteLine($"Month: {month.Month}, Revenue: {month.Revenue}");
             }
         }
-        public static void ApplyDiscount(this AppDbContext context)
+        public static void ApplyDiscount(this AppDbContext context , Order order , string discountCode)
         {
-            System.Console.Write("Order Id: "); 
-            int orderId = int.Parse(Console.ReadLine()!);
-            
-            System.Console.Write("Discount Code: ");
-            string discountCode = Console.ReadLine()!;
             using(var transaction = context.Database.BeginTransaction())
             {
                 try
@@ -326,12 +318,15 @@ namespace ShopEasy
                         throw new InvalidOperationException("Discount has already reached max uses");
                     }
 
-                    context.Orders.Where(o => o.OrderId == orderId)
-                                    .ExecuteUpdate(o => o.SetProperty(ta => ta.TotalAmount , ta => ta.TotalAmount + (ta.TotalAmount * (discount.Percentage / 100) ) ));
+                    context.Orders.Where(o => o == order)
+                                    .ExecuteUpdate(o => o.SetProperty(ta => ta.TotalAmount , ta => ta.TotalAmount - (ta.TotalAmount * (discount.Percentage / 100) ) ));
                     context.SaveChanges();
 
                     discount.CurrentUses++;
                     context.SaveChanges();
+
+                    transaction.Commit();
+                    System.Console.WriteLine("Discount Applied Successfully!");
                 }
                 catch (Exception e)
                 {
@@ -356,16 +351,13 @@ namespace ShopEasy
                 System.Console.WriteLine(review);
             }
         }
-        public static void LoadCustomerData(this AppDbContext context)
+        public static void LoadCustomerData(this AppDbContext context, Customer customer)
         {
-            System.Console.Write("Customer Id: ");
-            int customerId = int.Parse(Console.ReadLine()!);
-
             var data = context.Customers.Include(c => c.Orders)
                                         .ThenInclude(o => o.OrderItems)
                                         .Include(c => c.Reviews)
                                         .AsSplitQuery()
-                                        .SingleOrDefault(c => c.CustomerId == customerId);
+                                        .SingleOrDefault(c => c == customer);
 
             var orders = data?.Orders.Select(o => new {
                                                     Order = o ,
@@ -389,7 +381,7 @@ namespace ShopEasy
         }public static void ViewCustomersWithNoOrders(this AppDbContext context)
         {
             var customers = context.Customers.Include(c => c.Orders)
-                                                .GroupJoin(context.Orders, c => c.CustomerId, o => o.OrderId, (customer, orders) => new
+                                                .GroupJoin(context.Orders, c => c.CustomerId, o => o.CustomerId, (customer, orders) => new
                                                 {
                                                     CustomerName = customer.FullName,
                                                     CustomerEmail = customer.Email,
